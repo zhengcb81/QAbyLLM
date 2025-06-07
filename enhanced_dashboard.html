@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>企业竞争力分析仪表板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .upload-section {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background-color: #f8f9ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background-color: #f0f4ff;
+        }
+
+        .upload-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .chart-container:hover {
+            transform: translateY(-5px);
+        }
+
+        .chart-container h3 {
+            text-align: center;
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 1.2rem;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+        }
+
+        .heatmap-container {
+            height: 500px;
+        }
+
+        .info-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .info-panel h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .company-info {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #667eea;
+        }
+
+        .dimension-info {
+            background: #fff5f5;
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #764ba2;
+        }
+
+        .score {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .reason {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 8px 6px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+        }
+
+        .data-table tr:hover {
+            background-color: #f8f9ff;
+        }
+
+        .company-name {
+            font-weight: bold;
+            color: #333;
+            text-align: left !important;
+            max-width: 80px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .score-cell {
+            font-weight: bold;
+            min-width: 35px;
+        }
+
+        .total-score {
+            background-color: #e8f4fd;
+            font-weight: bold;
+        }
+
+        .avg-score {
+            background-color: #f0f8ff;
+            font-weight: bold;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .status-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏢 企业竞争力分析仪表板</h1>
+            <p>拖拽或点击上传JSON文件，查看多维度竞争力分析</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div>
+                    <h3>📁 上传分析数据</h3>
+                    <p>支持JSON格式文件，拖拽文件到此处或点击下方按钮选择文件</p>
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                        选择文件
+                    </button>
+                    <input type="file" id="fileInput" class="file-input" accept=".json" />
+                </div>
+            </div>
+            <div id="statusMessage"></div>
+        </div>
+
+        <div class="main-content">
+            <div class="charts-section">
+                <div class="chart-container">
+                    <h3>📊 多维度雷达图</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>📈 评分对比柱状图</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container heatmap-container">
+                    <h3>🔥 评分热力图</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="heatmapChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3>📋 汇总数据表</h3>
+                    <div style="overflow-x: auto;">
+                        <table class="data-table" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>公司</th>
+                                    <th>网络效应</th>
+                                    <th>规模效应</th>
+                                    <th>客户黏性</th>
+                                    <th>成本优势</th>
+                                    <th>竞争格局</th>
+                                    <th>进入壁垒</th>
+                                    <th>价格敏感度</th>
+                                    <th>总分</th>
+                                    <th>平均分</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr>
+                                    <td colspan="10" style="text-align: center; padding: 20px; color: #666;">
+                                        请上传JSON文件查看数据
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <h3>💡 详细信息</h3>
+                <div id="infoContent">
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <p>🖱️ 将鼠标悬停在图表上查看详细信息</p>
+                        <p>📊 支持雷达图、柱状图、热力图交互</p>
+                        <p>📁 上传JSON文件开始分析</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let globalCompanyData = [];
+        let radarChart, barChart, heatmapChart;
+
+        // 默认示例数据
+        const defaultData = [
+            {
+                "公司名": "小米集团",
+                "网络效应": {"评分": 8, "理由": "小米通过MIUI系统和生态链产品构建了强大的用户网络，用户粘性较高，生态产品间协同效应明显。"},
+                "规模效应": {"评分": 9, "理由": "小米在智能手机和IoT设备领域具有显著规模优势，大规模采购降低成本，供应链议价能力强。"},
+                "客户黏性": {"评分": 7, "理由": "MIUI系统和小米生态链产品提供了一定的用户粘性，但在高端市场用户忠诚度有待提升。"},
+                "成本优势": {"评分": 9, "理由": "小米以高性价比著称，通过精简渠道、控制营销成本等方式保持成本优势。"},
+                "竞争格局": {"评分": 6, "理由": "智能手机市场竞争激烈，小米面临华为、苹果、OPPO、vivo等强劲对手的竞争。"},
+                "进入壁垒": {"评分": 7, "理由": "智能手机行业技术门槛较高，需要大量研发投入和供应链资源，但新品牌仍可能进入。"},
+                "价格敏感度": {"评分": 8, "理由": "小米用户对价格较为敏感，高性价比是其核心竞争力，价格变动对销量影响较大。"}
+            },
+            {
+                "公司名": "华为",
+                "网络效应": {"评分": 7, "理由": "华为在企业级市场和5G基础设施领域具有强大的网络效应，但消费者业务网络效应相对较弱。"},
+                "规模效应": {"评分": 9, "理由": "华为是全球领先的通信设备制造商，在研发、采购、制造等方面具有显著规模优势。"},
+                "客户黏性": {"评分": 8, "理由": "企业客户对华为设备依赖度较高，更换成本大；消费者对华为品牌忠诚度也较高。"},
+                "成本优势": {"评分": 9, "理由": "华为通过垂直整合和规模效应实现成本控制，自研芯片等核心技术降低对外依赖。"},
+                "竞争格局": {"评分": 7, "理由": "在通信设备领域华为领先，但面临政治因素影响；消费者业务竞争激烈。"},
+                "进入壁垒": {"评分": 8, "理由": "通信设备行业技术壁垒极高，需要长期技术积累和大量专利，进入门槛很高。"},
+                "价格敏感度": {"评分": 6, "理由": "企业客户更注重技术和服务，价格敏感度相对较低；消费者业务价格敏感度中等。"}
+            },
+            {
+                "公司名": "苹果",
+                "网络效应": {"评分": 10, "理由": "苹果生态系统具有极强的网络效应，iPhone、iPad、Mac、Apple Watch等设备深度整合，用户粘性极高。"},
+                "规模效应": {"评分": 9, "理由": "苹果虽然出货量不是最大，但单品价值高，在供应链议价和研发摊销方面具有优势。"},
+                "客户黏性": {"评分": 10, "理由": "苹果用户忠诚度极高，生态系统锁定效应强，用户转换成本很高。"},
+                "成本优势": {"评分": 8, "理由": "苹果通过设计优化和供应链管理控制成本，但高端定位使其成本结构与其他厂商不同。"},
+                "竞争格局": {"评分": 7, "理由": "在高端市场苹果具有优势地位，但整体智能手机市场竞争激烈。"},
+                "进入壁垒": {"评分": 9, "理由": "苹果的生态系统、品牌价值、技术积累构成了极高的进入壁垒。"},
+                "价格敏感度": {"评分": 6, "理由": "苹果用户对价格相对不敏感，更注重产品体验和品牌价值。"}
+            },
+            {
+                "公司名": "三星",
+                "网络效应": {"评分": 7, "理由": "三星在Android生态中具有一定网络效应，Galaxy系列产品间有协同，但不如苹果生态紧密。"},
+                "规模效应": {"评分": 9, "理由": "三星是全球最大的智能手机制造商之一，在显示屏、存储等核心器件方面具有规模优势。"},
+                "客户黏性": {"评分": 8, "理由": "三星在高端市场有一定用户忠诚度，One UI系统和三星生态提供了用户粘性。"},
+                "成本优势": {"评分": 9, "理由": "三星垂直整合程度高，自产核心器件如屏幕、存储、处理器，成本控制能力强。"},
+                "竞争格局": {"评分": 7, "理由": "三星在全球智能手机市场份额领先，但面临苹果、华为、小米等强劲竞争。"},
+                "进入壁垒": {"评分": 8, "理由": "智能手机行业技术门槛高，三星在显示技术、半导体制造等方面的优势构成进入壁垒。"},
+                "价格敏感度": {"评分": 6, "理由": "三星产品线覆盖高中低端，不同细分市场价格敏感度不同，整体中等水平。"}
+            }
+        ];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFileUpload();
+            loadData(defaultData);
+        });
+
+        // 文件上传设置
+        function setupFileUpload() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            // 拖拽事件
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFile(files[0]);
+                }
+            });
+
+            // 文件选择事件
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFile(e.target.files[0]);
+                }
+            });
+        }
+
+        // 处理文件
+        function handleFile(file) {
+            if (!file.name.endsWith('.json')) {
+                showStatus('请选择JSON格式文件', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    loadData(data);
+                    showStatus('文件上传成功！', 'success');
+                } catch (error) {
+                    showStatus('JSON文件格式错误：' + error.message, 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // 显示状态消息
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-${type}">${message}</div>`;
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        }
+
+        // 加载数据
+        function loadData(data) {
+            console.log('Loading data:', data);
+            globalCompanyData = parseCompanyData(data);
+            console.log('Parsed company data:', globalCompanyData);
+            
+            createRadarChart();
+            createBarChart();
+            createHeatmap();
+            updateDataTable();
+        }
+
+        // 解析公司数据
+        function parseCompanyData(data) {
+            const companies = [];
+            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
+
+            data.forEach(item => {
+                const company = {
+                    name: item['公司名'] || item.company || '未知公司',
+                    scores: {},
+                    reasons: {}
+                };
+
+                dimensions.forEach(dim => {
+                    if (item[dim]) {
+                        if (typeof item[dim] === 'object' && item[dim]['评分'] !== undefined) {
+                            company.scores[dim] = item[dim]['评分'];
+                            company.reasons[dim] = item[dim]['理由'] || '';
+                        } else if (typeof item[dim] === 'number') {
+                            company.scores[dim] = item[dim];
+                            company.reasons[dim] = '';
+                        }
+                    }
+                });
+
+                companies.push(company);
+            });
+
+            return companies;
+        }
+
+        // 创建雷达图
+        function createRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if (radarChart) {
+                radarChart.destroy();
+            }
+
+            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+
+            const datasets = globalCompanyData.map((company, index) => ({
+                label: company.name,
+                data: dimensions.map(dim => company.scores[dim] || 0),
+                borderColor: colors[index % colors.length],
+                backgroundColor: colors[index % colors.length] + '20',
+                pointBackgroundColor: colors[index % colors.length],
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: colors[index % colors.length]
+            }));
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: dimensions,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    onHover: (event, elements) => {
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const datasetIndex = element.datasetIndex;
+                            const dataIndex = element.index;
+                            const company = globalCompanyData[datasetIndex];
+                            const dimension = dimensions[dataIndex];
+                            
+                            showDetailInfo(company.name, dimension, company.scores[dimension], company.reasons[dimension]);
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建柱状图
+        function createBarChart() {
+            const ctx = document.getElementById('barChart').getContext('2d');
+            
+            if (barChart) {
+                barChart.destroy();
+            }
+
+            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
+            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+
+            const datasets = globalCompanyData.map((company, index) => ({
+                label: company.name,
+                data: dimensions.map(dim => company.scores[dim] || 0),
+                backgroundColor: colors[index % colors.length] + '80',
+                borderColor: colors[index % colors.length],
+                borderWidth: 1
+            }));
+
+            barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dimensions,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    onHover: (event, elements) => {
+                        if (elements.length > 0) {
+                            const element = elements[0];
+                            const datasetIndex = element.datasetIndex;
+                            const dataIndex = element.index;
+                            const company = globalCompanyData[datasetIndex];
+                            const dimension = dimensions[dataIndex];
+                            
+                            showDetailInfo(company.name, dimension, company.scores[dimension], company.reasons[dimension]);
+                        }
+                    }
+                }
+            });
+        }
+
+        // 创建热力图
+        function createHeatmap() {
+            const canvas = document.getElementById('heatmapChart');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置canvas尺寸
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth - 20;
+            canvas.height = container.clientHeight - 20;
+            
+            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
+            const companies = globalCompanyData.map(c => c.name);
+            
+            const cellWidth = (canvas.width - 120) / dimensions.length;
+            const cellHeight = (canvas.height - 80) / companies.length;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制热力图
+            companies.forEach((company, i) => {
+                dimensions.forEach((dimension, j) => {
+                    const score = globalCompanyData[i].scores[dimension] || 0;
+                    const intensity = score / 10;
+                    
+                    // 颜色映射
+                    const red = Math.floor(255 * (1 - intensity));
+                    const green = Math.floor(255 * intensity);
+                    const blue = 100;
+                    
+                    ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
+                    ctx.fillRect(100 + j * cellWidth, 40 + i * cellHeight, cellWidth - 1, cellHeight - 1);
+                    
+                    // 绘制分数
+                    ctx.fillStyle = intensity > 0.5 ? 'white' : 'black';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(score.toString(), 100 + j * cellWidth + cellWidth/2, 40 + i * cellHeight + cellHeight/2 + 5);
+                });
+            });
+            
+            // 绘制标签
+            ctx.fillStyle = 'black';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'right';
+            companies.forEach((company, i) => {
+                const displayName = company.length > 8 ? company.substring(0, 8) + '...' : company;
+                ctx.fillText(displayName, 95, 40 + i * cellHeight + cellHeight/2 + 5);
+            });
+            
+            ctx.textAlign = 'center';
+            dimensions.forEach((dimension, j) => {
+                ctx.fillText(dimension, 100 + j * cellWidth + cellWidth/2, 30);
+            });
+            
+            // 添加鼠标事件
+            canvas.addEventListener('mousemove', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                const j = Math.floor((x - 100) / cellWidth);
+                const i = Math.floor((y - 40) / cellHeight);
+                
+                if (i >= 0 && i < companies.length && j >= 0 && j < dimensions.length) {
+                    const company = globalCompanyData[i];
+                    const dimension = dimensions[j];
+                    showDetailInfo(company.name, dimension, company.scores[dimension], company.reasons[dimension]);
+                }
+            });
+        }
+
+        // 更新数据表
+        function updateDataTable() {
+            const tableBody = document.getElementById('tableBody');
+            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
+            
+            tableBody.innerHTML = '';
+            
+            globalCompanyData.forEach(company => {
+                const row = document.createElement('tr');
+                
+                // 公司名称
+                const nameCell = document.createElement('td');
+                nameCell.className = 'company-name';
+                nameCell.textContent = company.name;
+                row.appendChild(nameCell);
+                
+                // 各维度评分
+                let totalScore = 0;
+                let validScores = 0;
+                
+                dimensions.forEach(dim => {
+                    const cell = document.createElement('td');
+                    cell.className = 'score-cell';
+                    const score = company.scores[dim] || 0;
+                    cell.textContent = score;
+                    if (score > 0) {
+                        totalScore += score;
+                        validScores++;
+                    }
+                    row.appendChild(cell);
+                });
+                
+                // 总分
+                const totalCell = document.createElement('td');
+                totalCell.className = 'score-cell total-score';
+                totalCell.textContent = totalScore;
+                row.appendChild(totalCell);
+                
+                // 平均分
+                const avgCell = document.createElement('td');
+                avgCell.className = 'score-cell avg-score';
+                avgCell.textContent = validScores > 0 ? (totalScore / validScores).toFixed(1) : '0';
+                row.appendChild(avgCell);
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 显示详细信息
+        function showDetailInfo(companyName, dimension, score, reason) {
+            const infoContent = document.getElementById('infoContent');
+            infoContent.innerHTML = `
+                <div class="company-info">
+                    <h4>🏢 ${companyName}</h4>
+                    <p><strong>维度：</strong>${dimension}</p>
+                </div>
+                <div class="dimension-info">
+                    <div class="score">📊 评分：${score}/10</div>
+                    <div class="reason">
+                        <strong>💡 分析理由：</strong><br>
+                        ${reason || '暂无详细理由'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // 窗口大小变化时重绘热力图
+        window.addEventListener('resize', () => {
+            if (globalCompanyData.length > 0) {
+                setTimeout(createHeatmap, 100);
+            }
+        });
+    </script>
+</body>
+</html> 
