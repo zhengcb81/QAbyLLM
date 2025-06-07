@@ -1,0 +1,48 @@
+# 问答系统配置文件示例
+# 复制此文件为 config.yaml 并填入您的实际配置
+
+# API配置
+api:
+  # OpenAI API密钥 - 请替换为您的实际密钥
+  openai_api_key: "your_openai_api_key_here"
+  # 使用的模型
+  openai_model: "gpt-4o"
+  # 是否使用OpenAI的网络搜索功能
+  use_openai_search: true
+
+# 本地知识库配置
+local_knowledge:
+  enabled: true
+  documents_folder: "knowledge_base"
+  supported_formats: ["txt", "md", "json"]
+  max_context_length: 4000
+
+# 分析配置 - 支持多公司分析
+analysis:
+  companies:
+    - "小米集团"
+    - "华为"
+    - "苹果"
+    - "三星"
+
+# 问题列表
+questions:
+  - "请分析{company_name}的网络效应强度，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+  - "请分析{company_name}的规模效应，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+  - "请分析{company_name}的客户黏性，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+  - "请分析{company_name}的成本优势，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+  - "请分析{company_name}所在行业的竞争格局，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+  - "请分析{company_name}的进入壁垒，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+  - "请分析{company_name}的价格敏感度，并给出1-10分的评分。请以JSON格式回答，包含评分和理由。"
+
+# 输出配置
+output:
+  file_path: "multi_company_analysis.json"
+  include_search_sources: true
+
+# 可视化配置
+visualization:
+  enabled: true
+  chart_types: ["radar", "bar", "heatmap"]
+  output_folder: "charts"
+  show_charts: true 
