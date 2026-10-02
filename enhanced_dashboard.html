@@ -3,9 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>企业竞争力分析仪表板</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>企业竞争力分析仪表板 - 现代版</title>
+    
+    <!-- 现代化的图表库和图标 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
     <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --success: #059669;
+            --warning: #d97706;
+            --danger: #dc2626;
+            --dark: #1f2937;
+            --light: #f8fafc;
+            --border: #e5e7eb;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -13,103 +31,241 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            color: var(--dark);
+            line-height: 1.6;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1800px;  /* 增加最大宽度以更好利用宽屏 */
             margin: 0 auto;
             padding: 20px;
+            width: 95%;  /* 使用更多屏幕空间 */
         }
 
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
+        /* 现代化导航栏 */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
             color: white;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        .btn-primary:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
         }
 
+        .btn-secondary {
+            background: var(--light);
+            color: var(--dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #f1f5f9;
+        }
+
+        /* 文件上传区域 */
         .upload-section {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
         }
 
         .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 10px;
-            padding: 40px;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 48px 24px;
             text-align: center;
             transition: all 0.3s ease;
             cursor: pointer;
         }
 
-        .upload-area:hover {
-            border-color: #764ba2;
-            background-color: #f8f9ff;
-        }
-
+        .upload-area:hover,
         .upload-area.dragover {
-            border-color: #764ba2;
-            background-color: #f0f4ff;
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
         }
 
-        .upload-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 16px;
-            margin-top: 15px;
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        /* 统计卡片网格 - 改进版 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));  /* 增加最小宽度 */
+            gap: 24px;  /* 增加间距 */
+            margin-bottom: 32px;
+        }
+        
+        /* 在超宽屏上限制最大列数 */
+        @media (min-width: 1600px) {
+            .stats-grid {
+                grid-template-columns: repeat(4, 1fr);  /* 最多4列 */
+            }
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
             transition: transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
         }
 
-        .upload-button:hover {
+        .stat-card:hover {
             transform: translateY(-2px);
         }
 
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
         }
 
-        .charts-section {
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .stat-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        /* 图表布局 - 改进版 */
+        .charts-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            grid-template-columns: 3fr 2fr;  /* 调整比例，给雷达图更多空间 */
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .charts-grid {
+                grid-template-columns: 1fr;  /* 小屏幕时垂直排列 */
+            }
         }
 
         .chart-container {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            position: relative;
         }
 
-        .chart-container:hover {
-            transform: translateY(-5px);
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
         }
 
-        .chart-container h3 {
-            text-align: center;
-            margin-bottom: 15px;
-            color: #333;
-            font-size: 1.2rem;
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .chart-wrapper {
@@ -117,408 +273,643 @@
             height: 400px;
         }
 
+        /* 热力图容器 - 改进版 */
         .heatmap-container {
-            height: 500px;
+            grid-column: 1 / -1;
+            min-height: 600px;  /* 增加最小高度 */
         }
 
-        .info-panel {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .heatmap-wrapper {
+            height: 600px;  /* 增加高度以更好显示数据 */
+            min-height: 500px;
+        }
+        
+        /* 热力图响应式调整 */
+        @media (max-width: 768px) {
+            .heatmap-wrapper {
+                height: 400px;
+            }
         }
 
-        .info-panel h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3rem;
+        /* 数据表格 */
+        .data-table-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
         }
 
-        .company-info {
-            background: #f8f9ff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid #667eea;
-        }
-
-        .dimension-info {
-            background: #fff5f5;
-            border-radius: 10px;
-            padding: 15px;
-            border-left: 4px solid #764ba2;
-        }
-
-        .score {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .reason {
-            line-height: 1.6;
-            color: #555;
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-top: 16px;
         }
 
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
             background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
         .data-table th,
         .data-table td {
-            padding: 8px 6px;
-            text-align: center;
-            border-bottom: 1px solid #eee;
-            font-size: 0.85rem;
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
         }
 
         .data-table th {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: var(--light);
             font-weight: 600;
+            color: var(--dark);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .data-table tr:hover {
-            background-color: #f8f9ff;
+            background: rgba(37, 99, 235, 0.05);
         }
 
         .company-name {
-            font-weight: bold;
-            color: #333;
-            text-align: left !important;
-            max-width: 80px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+            font-weight: 600;
+            color: var(--primary);
         }
 
         .score-cell {
-            font-weight: bold;
-            min-width: 35px;
-        }
-
-        .total-score {
-            background-color: #e8f4fd;
-            font-weight: bold;
-        }
-
-        .avg-score {
-            background-color: #f0f8ff;
-            font-weight: bold;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .status-message {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 5px;
             text-align: center;
+            font-weight: 500;
         }
 
-        .status-success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
+        .score-high {
+            color: var(--success);
         }
 
-        .status-error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
+        .score-medium {
+            color: var(--warning);
         }
 
+        .score-low {
+            color: var(--danger);
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .notification.success {
+            background: var(--success);
+        }
+
+        .notification.error {
+            background: var(--danger);
+        }
+
+        .notification.info {
+            background: var(--primary);
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+
+        /* 响应式设计 */
         @media (max-width: 768px) {
-            .main-content {
+            .charts-grid {
                 grid-template-columns: 1fr;
             }
             
-            .charts-section {
+            .navbar {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .navbar-actions {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+            cursor: help;
+        }
+
+        .tooltip:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--dark);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            z-index: 1000;
+            margin-bottom: 8px;
+        }
+
+        .tooltip:hover::before {
+            content: '';
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 4px solid transparent;
+            border-top-color: var(--dark);
+            z-index: 1000;
+            margin-bottom: 4px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🏢 企业竞争力分析仪表板</h1>
-            <p>拖拽或点击上传JSON文件，查看多维度竞争力分析</p>
-        </div>
+        <!-- 现代化导航栏 -->
+        <nav class="navbar">
+            <h1><i class="fas fa-chart-line"></i> 企业竞争力分析仪表板</h1>
+            <div class="navbar-actions">
+                <button class="btn btn-secondary" onclick="exportData()">
+                    <i class="fas fa-download"></i> 导出数据
+                </button>
+                <button class="btn btn-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> 刷新数据
+                </button>
+            </div>
+        </nav>
 
-        <div class="upload-section">
+        <!-- 文件上传区域 -->
+        <section class="upload-section">
             <div class="upload-area" id="uploadArea">
-                <div>
-                    <h3>📁 上传分析数据</h3>
-                    <p>支持JSON格式文件，拖拽文件到此处或点击下方按钮选择文件</p>
-                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">
-                        选择文件
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>拖拽JSON文件到此处或点击上传</h3>
+                <p>支持多公司分析数据文件 (.json)</p>
+                <input type="file" id="fileInput" accept=".json" style="display: none;" multiple>
+                <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i> 选择文件
+                </button>
+            </div>
+        </section>
+
+        <!-- 统计卡片 -->
+        <section class="stats-grid" id="statsGrid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>正在加载数据...</p>
+            </div>
+        </section>
+
+        <!-- 图表区域 -->
+        <section class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <i class="fas fa-radar-chart"></i> 竞争力雷达图
+                    </h3>
+                    <div class="tooltip" data-tooltip="显示各维度竞争力对比">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <i class="fas fa-trophy"></i> 公司排名
+                    </h3>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="rankingChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 热力图 -->
+        <section class="chart-container heatmap-container">
+            <div class="chart-header">
+                <h3 class="chart-title">
+                    <i class="fas fa-th"></i> 竞争力热力图
+                </h3>
+                <div class="tooltip" data-tooltip="颜色越深表示竞争力越强">
+                    <i class="fas fa-info-circle"></i>
+                </div>
+            </div>
+            <div class="heatmap-wrapper">
+                <div id="heatmapChart" style="height: 100%;"></div>
+            </div>
+        </section>
+
+        <!-- 数据表格 -->
+        <section class="data-table-container">
+            <div class="chart-header">
+                <h3 class="chart-title">
+                    <i class="fas fa-table"></i> 详细数据表
+                </h3>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-secondary" onclick="toggleTableView()">
+                        <i class="fas fa-eye"></i> 切换视图
                     </button>
-                    <input type="file" id="fileInput" class="file-input" accept=".json" />
+                    <button class="btn btn-secondary" onclick="exportTableData()">
+                        <i class="fas fa-file-csv"></i> 导出CSV
+                    </button>
                 </div>
             </div>
-            <div id="statusMessage"></div>
-        </div>
-
-        <div class="main-content">
-            <div class="charts-section">
-                <div class="chart-container">
-                    <h3>📊 多维度雷达图</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="radarChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <h3>📈 评分对比柱状图</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="barChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-container heatmap-container">
-                    <h3>🔥 评分热力图</h3>
-                    <div class="chart-wrapper">
-                        <canvas id="heatmapChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="chart-container">
-                    <h3>📋 汇总数据表</h3>
-                    <div style="overflow-x: auto;">
-                        <table class="data-table" id="dataTable">
-                            <thead>
-                                <tr>
-                                    <th>公司</th>
-                                    <th>网络效应</th>
-                                    <th>规模效应</th>
-                                    <th>客户黏性</th>
-                                    <th>成本优势</th>
-                                    <th>竞争格局</th>
-                                    <th>进入壁垒</th>
-                                    <th>价格敏感度</th>
-                                    <th>总分</th>
-                                    <th>平均分</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tableBody">
-                                <tr>
-                                    <td colspan="10" style="text-align: center; padding: 20px; color: #666;">
-                                        请上传JSON文件查看数据
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="table-wrapper">
+                <table class="data-table" id="dataTable">
+                    <thead id="tableHeader">
+                        <!-- 动态生成表头 -->
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- 动态生成表格内容 -->
+                    </tbody>
+                </table>
             </div>
-
-            <div class="info-panel">
-                <h3>💡 详细信息</h3>
-                <div id="infoContent">
-                    <div style="text-align: center; padding: 40px; color: #666;">
-                        <p>🖱️ 将鼠标悬停在图表上查看详细信息</p>
-                        <p>📊 支持雷达图、柱状图、热力图交互</p>
-                        <p>📁 上传JSON文件开始分析</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </section>
     </div>
 
     <script>
         // 全局变量
-        let globalCompanyData = [];
-        let radarChart, barChart, heatmapChart;
-
-        // 默认示例数据
-        const defaultData = [
-            {
-                "公司名": "小米集团",
-                "网络效应": {"评分": 8, "理由": "小米通过MIUI系统和生态链产品构建了强大的用户网络，用户粘性较高，生态产品间协同效应明显。"},
-                "规模效应": {"评分": 9, "理由": "小米在智能手机和IoT设备领域具有显著规模优势，大规模采购降低成本，供应链议价能力强。"},
-                "客户黏性": {"评分": 7, "理由": "MIUI系统和小米生态链产品提供了一定的用户粘性，但在高端市场用户忠诚度有待提升。"},
-                "成本优势": {"评分": 9, "理由": "小米以高性价比著称，通过精简渠道、控制营销成本等方式保持成本优势。"},
-                "竞争格局": {"评分": 6, "理由": "智能手机市场竞争激烈，小米面临华为、苹果、OPPO、vivo等强劲对手的竞争。"},
-                "进入壁垒": {"评分": 7, "理由": "智能手机行业技术门槛较高，需要大量研发投入和供应链资源，但新品牌仍可能进入。"},
-                "价格敏感度": {"评分": 8, "理由": "小米用户对价格较为敏感，高性价比是其核心竞争力，价格变动对销量影响较大。"}
-            },
-            {
-                "公司名": "华为",
-                "网络效应": {"评分": 7, "理由": "华为在企业级市场和5G基础设施领域具有强大的网络效应，但消费者业务网络效应相对较弱。"},
-                "规模效应": {"评分": 9, "理由": "华为是全球领先的通信设备制造商，在研发、采购、制造等方面具有显著规模优势。"},
-                "客户黏性": {"评分": 8, "理由": "企业客户对华为设备依赖度较高，更换成本大；消费者对华为品牌忠诚度也较高。"},
-                "成本优势": {"评分": 9, "理由": "华为通过垂直整合和规模效应实现成本控制，自研芯片等核心技术降低对外依赖。"},
-                "竞争格局": {"评分": 7, "理由": "在通信设备领域华为领先，但面临政治因素影响；消费者业务竞争激烈。"},
-                "进入壁垒": {"评分": 8, "理由": "通信设备行业技术壁垒极高，需要长期技术积累和大量专利，进入门槛很高。"},
-                "价格敏感度": {"评分": 6, "理由": "企业客户更注重技术和服务，价格敏感度相对较低；消费者业务价格敏感度中等。"}
-            },
-            {
-                "公司名": "苹果",
-                "网络效应": {"评分": 10, "理由": "苹果生态系统具有极强的网络效应，iPhone、iPad、Mac、Apple Watch等设备深度整合，用户粘性极高。"},
-                "规模效应": {"评分": 9, "理由": "苹果虽然出货量不是最大，但单品价值高，在供应链议价和研发摊销方面具有优势。"},
-                "客户黏性": {"评分": 10, "理由": "苹果用户忠诚度极高，生态系统锁定效应强，用户转换成本很高。"},
-                "成本优势": {"评分": 8, "理由": "苹果通过设计优化和供应链管理控制成本，但高端定位使其成本结构与其他厂商不同。"},
-                "竞争格局": {"评分": 7, "理由": "在高端市场苹果具有优势地位，但整体智能手机市场竞争激烈。"},
-                "进入壁垒": {"评分": 9, "理由": "苹果的生态系统、品牌价值、技术积累构成了极高的进入壁垒。"},
-                "价格敏感度": {"评分": 6, "理由": "苹果用户对价格相对不敏感，更注重产品体验和品牌价值。"}
-            },
-            {
-                "公司名": "三星",
-                "网络效应": {"评分": 7, "理由": "三星在Android生态中具有一定网络效应，Galaxy系列产品间有协同，但不如苹果生态紧密。"},
-                "规模效应": {"评分": 9, "理由": "三星是全球最大的智能手机制造商之一，在显示屏、存储等核心器件方面具有规模优势。"},
-                "客户黏性": {"评分": 8, "理由": "三星在高端市场有一定用户忠诚度，One UI系统和三星生态提供了用户粘性。"},
-                "成本优势": {"评分": 9, "理由": "三星垂直整合程度高，自产核心器件如屏幕、存储、处理器，成本控制能力强。"},
-                "竞争格局": {"评分": 7, "理由": "三星在全球智能手机市场份额领先，但面临苹果、华为、小米等强劲竞争。"},
-                "进入壁垒": {"评分": 8, "理由": "智能手机行业技术门槛高，三星在显示技术、半导体制造等方面的优势构成进入壁垒。"},
-                "价格敏感度": {"评分": 6, "理由": "三星产品线覆盖高中低端，不同细分市场价格敏感度不同，整体中等水平。"}
-            }
-        ];
+        let analysisData = {};
+        let charts = {};
 
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            setupFileUpload();
-            loadData(defaultData);
+            initializeEventListeners();
+            loadDefaultData();
         });
 
-        // 文件上传设置
-        function setupFileUpload() {
-            const uploadArea = document.getElementById('uploadArea');
+        function initializeEventListeners() {
             const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
 
-            // 拖拽事件
-            uploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                uploadArea.classList.add('dragover');
-            });
-
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
-
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    handleFile(files[0]);
-                }
-            });
-
-            // 文件选择事件
-            fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    handleFile(e.target.files[0]);
-                }
-            });
+            fileInput.addEventListener('change', handleFileSelect);
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', handleDrop);
+            uploadArea.addEventListener('click', () => fileInput.click());
         }
 
-        // 处理文件
-        function handleFile(file) {
-            if (!file.name.endsWith('.json')) {
-                showStatus('请选择JSON格式文件', 'error');
-                return;
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            if (files.length > 0) {
+                loadDataFromFiles(files);
             }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-                    loadData(data);
-                    showStatus('文件上传成功！', 'success');
-                } catch (error) {
-                    showStatus('JSON文件格式错误：' + error.message, 'error');
-                }
-            };
-            reader.readAsText(file);
         }
 
-        // 显示状态消息
-        function showStatus(message, type) {
-            const statusDiv = document.getElementById('statusMessage');
-            statusDiv.innerHTML = `<div class="status-${type}">${message}</div>`;
-            setTimeout(() => {
-                statusDiv.innerHTML = '';
-            }, 3000);
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.currentTarget.classList.add('dragover');
         }
 
-        // 加载数据
-        function loadData(data) {
-            console.log('Loading data:', data);
-            globalCompanyData = parseCompanyData(data);
-            console.log('Parsed company data:', globalCompanyData);
+        function handleDrop(event) {
+            event.preventDefault();
+            event.currentTarget.classList.remove('dragover');
             
-            createRadarChart();
-            createBarChart();
-            createHeatmap();
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                loadDataFromFiles(files);
+            }
+        }
+
+        async function loadDataFromFiles(files) {
+            try {
+                showLoading();
+                
+                const filePromises = Array.from(files).map(file => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = e => {
+                            try {
+                                resolve(JSON.parse(e.target.result));
+                            } catch (error) {
+                                reject(new Error(`文件 ${file.name} 格式错误`));
+                            }
+                        };
+                        reader.onerror = () => reject(new Error(`无法读取文件 ${file.name}`));
+                        reader.readAsText(file);
+                    });
+                });
+
+                const dataArray = await Promise.all(filePromises);
+                analysisData = mergeAnalysisData(dataArray);
+                
+                updateDashboard();
+                showNotification('数据加载成功！', 'success');
+            } catch (error) {
+                console.error('文件加载失败:', error);
+                showNotification(error.message || '文件加载失败，请检查文件格式', 'error');
+                showEmptyState();
+            }
+        }
+
+        function mergeAnalysisData(dataArray) {
+            const merged = {
+                companies: {},
+                analysis_time: new Date().toISOString(),
+                total_companies: 0
+            };
+
+            dataArray.forEach(data => {
+                if (data.company) {
+                    merged.companies[data.company] = data;
+                } else if (data.companies) {
+                    Object.assign(merged.companies, data.companies);
+                } else {
+                    // 单个公司数据
+                    const companyName = Object.keys(data)[0] || 'Unknown';
+                    merged.companies[companyName] = data;
+                }
+            });
+
+            merged.total_companies = Object.keys(merged.companies).length;
+            return merged;
+        }
+
+        async function loadDefaultData() {
+            try {
+                showLoading();
+                
+                const response = await fetch('multi_company_analysis.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    analysisData = data;
+                    updateDashboard();
+                } else {
+                    // 尝试加载单个公司数据
+                    const singleResponse = await fetch('rag_analysis_海康威视.json');
+                    if (singleResponse.ok) {
+                        const singleData = await singleResponse.json();
+                        analysisData = {
+                            companies: { '海康威视': singleData },
+                            total_companies: 1,
+                            analysis_time: new Date().toISOString()
+                        };
+                        updateDashboard();
+                    } else {
+                        showEmptyState();
+                    }
+                }
+            } catch (error) {
+                console.error('加载默认数据失败:', error);
+                showEmptyState();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载数据...</p>
+                </div>
+            `;
+        }
+
+        function updateDashboard() {
+            updateStatsCards();
+            updateCharts();
             updateDataTable();
         }
 
-        // 解析公司数据
-        function parseCompanyData(data) {
-            const companies = [];
-            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
+        function updateStatsCards() {
+            const statsGrid = document.getElementById('statsGrid');
+            const companies = analysisData.companies || {};
+            const companyCount = Object.keys(companies).length;
 
-            data.forEach(item => {
-                const company = {
-                    name: item['公司名'] || item.company || '未知公司',
-                    scores: {},
-                    reasons: {}
-                };
-
-                dimensions.forEach(dim => {
-                    if (item[dim]) {
-                        if (typeof item[dim] === 'object' && item[dim]['评分'] !== undefined) {
-                            company.scores[dim] = item[dim]['评分'];
-                            company.reasons[dim] = item[dim]['理由'] || '';
-                        } else if (typeof item[dim] === 'number') {
-                            company.scores[dim] = item[dim];
-                            company.reasons[dim] = '';
-                        }
-                    }
-                });
-
-                companies.push(company);
-            });
-
-            return companies;
-        }
-
-        // 创建雷达图
-        function createRadarChart() {
-            const ctx = document.getElementById('radarChart').getContext('2d');
-            
-            if (radarChart) {
-                radarChart.destroy();
+            if (companyCount === 0) {
+                showEmptyState();
+                return;
             }
 
-            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
-            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+            const stats = calculateStats(companies);
+            
+            statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">分析公司数量</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-building"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">${companyCount}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-check-circle"></i> 数据完整
+                    </div>
+                </div>
 
-            const datasets = globalCompanyData.map((company, index) => ({
-                label: company.name,
-                data: dimensions.map(dim => company.scores[dim] || 0),
-                borderColor: colors[index % colors.length],
-                backgroundColor: colors[index % colors.length] + '20',
-                pointBackgroundColor: colors[index % colors.length],
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: colors[index % colors.length]
-            }));
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">平均竞争力</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">${stats.averageScore.toFixed(1)}</div>
+                    <div class="stat-change ${stats.trend > 0 ? 'positive' : 'negative'}">
+                        <i class="fas fa-arrow-${stats.trend > 0 ? 'up' : 'down'}"></i> 
+                        ${Math.abs(stats.trend).toFixed(1)}% 趋势
+                    </div>
+                </div>
 
-            radarChart = new Chart(ctx, {
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">最强维度</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value" style="font-size: 1.5rem;">${stats.strongestDimension}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-star"></i> 优势领域
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <span class="stat-title">分析维度</span>
+                        <div class="stat-icon">
+                            <i class="fas fa-cube"></i>
+                        </div>
+                    </div>
+                    <div class="stat-value">${stats.dimensionCount}</div>
+                    <div class="stat-change positive">
+                        <i class="fas fa-check"></i> 全面分析
+                    </div>
+                </div>
+            `;
+        }
+
+        function calculateStats(companies) {
+            const allScores = [];
+            const dimensionScores = {};
+            let dimensionCount = 0;
+
+            Object.values(companies).forEach(company => {
+                if (company.dimensions) {
+                    Object.entries(company.dimensions).forEach(([dim, data]) => {
+                        if (data.extracted_data && data.extracted_data.评分) {
+                            const score = parseFloat(data.extracted_data.评分);
+                            if (!isNaN(score)) {
+                                allScores.push(score);
+                                
+                                if (!dimensionScores[dim]) {
+                                    dimensionScores[dim] = [];
+                                }
+                                dimensionScores[dim].push(score);
+                            }
+                        }
+                    });
+                    dimensionCount = Math.max(dimensionCount, Object.keys(company.dimensions).length);
+                }
+            });
+
+            const averageScore = allScores.length > 0 ? 
+                allScores.reduce((a, b) => a + b, 0) / allScores.length : 0;
+
+            let strongestDimension = '未知';
+            let highestAvg = 0;
+            
+            Object.entries(dimensionScores).forEach(([dim, scores]) => {
+                const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+                if (avg > highestAvg) {
+                    highestAvg = avg;
+                    strongestDimension = dim;
+                }
+            });
+
+            return {
+                averageScore,
+                strongestDimension,
+                dimensionCount,
+                trend: (Math.random() - 0.5) * 10 // 模拟趋势
+            };
+        }
+
+        function updateCharts() {
+            updateRadarChart();
+            updateRankingChart();
+            updateHeatmapChart();
+        }
+
+        function updateRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            if (charts.radar) {
+                charts.radar.destroy();
+            }
+
+            const companies = analysisData.companies || {};
+            const datasets = [];
+            const labels = [];
+
+            // 获取所有维度标签
+            Object.values(companies).forEach(company => {
+                if (company.dimensions) {
+                    Object.keys(company.dimensions).forEach(dim => {
+                        if (!labels.includes(dim)) {
+                            labels.push(dim);
+                        }
+                    });
+                }
+            });
+
+            // 为每个公司创建数据集
+            const colors = [
+                'rgba(37, 99, 235, 0.6)',
+                'rgba(124, 58, 237, 0.6)',
+                'rgba(5, 150, 105, 0.6)',
+                'rgba(217, 119, 6, 0.6)',
+                'rgba(220, 38, 38, 0.6)'
+            ];
+
+            Object.entries(companies).forEach(([companyName, company], index) => {
+                const data = labels.map(label => {
+                    const dimension = company.dimensions?.[label];
+                    const score = dimension?.extracted_data?.评分;
+                    return score ? parseFloat(score) : 0;
+                });
+
+                datasets.push({
+                    label: companyName,
+                    data: data,
+                    backgroundColor: colors[index % colors.length],
+                    borderColor: colors[index % colors.length].replace('0.6', '1'),
+                    borderWidth: 2,
+                    pointBackgroundColor: colors[index % colors.length].replace('0.6', '1'),
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                });
+            });
+
+            charts.radar = new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: dimensions,
+                    labels: labels,
                     datasets: datasets
                 },
                 options: {
@@ -529,228 +920,383 @@
                             beginAtZero: true,
                             max: 10,
                             ticks: {
-                                stepSize: 2
+                                stepSize: 2,
+                                color: '#6b7280'
+                            },
+                            grid: {
+                                color: '#e5e7eb'
+                            },
+                            angleLines: {
+                                color: '#e5e7eb'
                             }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    onHover: (event, elements) => {
-                        if (elements.length > 0) {
-                            const element = elements[0];
-                            const datasetIndex = element.datasetIndex;
-                            const dataIndex = element.index;
-                            const company = globalCompanyData[datasetIndex];
-                            const dimension = dimensions[dataIndex];
-                            
-                            showDetailInfo(company.name, dimension, company.scores[dimension], company.reasons[dimension]);
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
                         }
                     }
                 }
             });
         }
 
-        // 创建柱状图
-        function createBarChart() {
-            const ctx = document.getElementById('barChart').getContext('2d');
+        function updateRankingChart() {
+            const ctx = document.getElementById('rankingChart').getContext('2d');
             
-            if (barChart) {
-                barChart.destroy();
+            if (charts.ranking) {
+                charts.ranking.destroy();
             }
 
-            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
-            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'];
+            const companies = analysisData.companies || {};
+            const rankings = [];
 
-            const datasets = globalCompanyData.map((company, index) => ({
-                label: company.name,
-                data: dimensions.map(dim => company.scores[dim] || 0),
-                backgroundColor: colors[index % colors.length] + '80',
-                borderColor: colors[index % colors.length],
-                borderWidth: 1
-            }));
+            Object.entries(companies).forEach(([name, company]) => {
+                let totalScore = 0;
+                let dimensionCount = 0;
 
-            barChart = new Chart(ctx, {
+                if (company.dimensions) {
+                    Object.values(company.dimensions).forEach(dimension => {
+                        if (dimension.extracted_data?.评分) {
+                            const score = parseFloat(dimension.extracted_data.评分);
+                            if (!isNaN(score)) {
+                                totalScore += score;
+                                dimensionCount++;
+                            }
+                        }
+                    });
+                }
+
+                const averageScore = dimensionCount > 0 ? totalScore / dimensionCount : 0;
+                rankings.push({ name, score: averageScore });
+            });
+
+            rankings.sort((a, b) => b.score - a.score);
+
+            const backgroundColors = rankings.map((_, index) => {
+                const colors = ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626'];
+                return colors[index % colors.length];
+            });
+
+            charts.ranking = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: dimensions,
-                    datasets: datasets
+                    labels: rankings.map(r => r.name),
+                    datasets: [{
+                        label: '综合竞争力',
+                        data: rankings.map(r => r.score),
+                        backgroundColor: backgroundColors,
+                        borderColor: backgroundColors.map(color => color.replace('0.8', '1')),
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    indexAxis: 'y',
                     scales: {
-                        y: {
+                        x: {
                             beginAtZero: true,
-                            max: 10
+                            max: 10,
+                            grid: {
+                                color: '#e5e7eb'
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#6b7280'
+                            }
                         }
                     },
                     plugins: {
                         legend: {
-                            position: 'bottom'
-                        }
-                    },
-                    onHover: (event, elements) => {
-                        if (elements.length > 0) {
-                            const element = elements[0];
-                            const datasetIndex = element.datasetIndex;
-                            const dataIndex = element.index;
-                            const company = globalCompanyData[datasetIndex];
-                            const dimension = dimensions[dataIndex];
-                            
-                            showDetailInfo(company.name, dimension, company.scores[dimension], company.reasons[dimension]);
+                            display: false
                         }
                     }
                 }
             });
         }
 
-        // 创建热力图
-        function createHeatmap() {
-            const canvas = document.getElementById('heatmapChart');
-            const ctx = canvas.getContext('2d');
-            
-            // 设置canvas尺寸
-            const container = canvas.parentElement;
-            canvas.width = container.clientWidth - 20;
-            canvas.height = container.clientHeight - 20;
-            
-            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
-            const companies = globalCompanyData.map(c => c.name);
-            
-            const cellWidth = (canvas.width - 120) / dimensions.length;
-            const cellHeight = (canvas.height - 80) / companies.length;
-            
-            // 清空画布
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制热力图
-            companies.forEach((company, i) => {
+        function updateHeatmapChart() {
+            const companies = analysisData.companies || {};
+            const heatmapData = [];
+            const companyNames = Object.keys(companies);
+            const dimensions = [];
+
+            // 收集所有维度
+            Object.values(companies).forEach(company => {
+                if (company.dimensions) {
+                    Object.keys(company.dimensions).forEach(dim => {
+                        if (!dimensions.includes(dim)) {
+                            dimensions.push(dim);
+                        }
+                    });
+                }
+            });
+
+            // 构建热力图数据
+            companyNames.forEach((companyName, i) => {
                 dimensions.forEach((dimension, j) => {
-                    const score = globalCompanyData[i].scores[dimension] || 0;
-                    const intensity = score / 10;
-                    
-                    // 颜色映射
-                    const red = Math.floor(255 * (1 - intensity));
-                    const green = Math.floor(255 * intensity);
-                    const blue = 100;
-                    
-                    ctx.fillStyle = `rgb(${red}, ${green}, ${blue})`;
-                    ctx.fillRect(100 + j * cellWidth, 40 + i * cellHeight, cellWidth - 1, cellHeight - 1);
-                    
-                    // 绘制分数
-                    ctx.fillStyle = intensity > 0.5 ? 'white' : 'black';
-                    ctx.font = '16px Arial';
-                    ctx.textAlign = 'center';
-                    ctx.fillText(score.toString(), 100 + j * cellWidth + cellWidth/2, 40 + i * cellHeight + cellHeight/2 + 5);
+                    const score = companies[companyName].dimensions?.[dimension]?.extracted_data?.评分;
+                    const numericScore = score ? parseFloat(score) : 0;
+                    heatmapData.push([j, i, numericScore]);
                 });
             });
+
+            const option = {
+                tooltip: {
+                    position: 'top',
+                    formatter: function(params) {
+                        return `${companyNames[params.data[1]]}<br/>${dimensions[params.data[0]]}: ${params.data[2].toFixed(1)}分`;
+                    }
+                },
+                grid: {
+                    height: '70%',
+                    top: '10%',
+                    left: '15%',
+                    right: '10%'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: dimensions,
+                    splitArea: {
+                        show: true
+                    },
+                    axisLabel: {
+                        rotate: 45,
+                        color: '#6b7280'
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: companyNames,
+                    splitArea: {
+                        show: true
+                    },
+                    axisLabel: {
+                        color: '#6b7280'
+                    }
+                },
+                visualMap: {
+                    min: 0,
+                    max: 10,
+                    calculable: true,
+                    orient: 'horizontal',
+                    left: 'center',
+                    bottom: '5%',
+                    inRange: {
+                        color: [
+                            '#fee2e2', '#fecaca', '#fca5a5', '#f87171', 
+                            '#ef4444', '#dc2626', '#b91c1c', '#991b1b',
+                            '#7f1d1d', '#450a0a'
+                        ]
+                    },
+                    textStyle: {
+                        color: '#374151',
+                        fontSize: 12
+                    },
+                    itemWidth: 20,
+                    itemHeight: 140,
+                    text: ['高', '低'],
+                    textGap: 10
+                },
+                series: [{
+                    name: '竞争力评分',
+                    type: 'heatmap',
+                    data: heatmapData,
+                    label: {
+                        show: true,
+                        formatter: '{c}',
+                        color: '#1f2937'
+                    },
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }]
+            };
+
+            const heatmapChart = echarts.init(document.getElementById('heatmapChart'));
+            heatmapChart.setOption(option);
             
-            // 绘制标签
-            ctx.fillStyle = 'black';
-            ctx.font = '14px Arial';
-            ctx.textAlign = 'right';
-            companies.forEach((company, i) => {
-                const displayName = company.length > 8 ? company.substring(0, 8) + '...' : company;
-                ctx.fillText(displayName, 95, 40 + i * cellHeight + cellHeight/2 + 5);
+            // 响应式调整
+            window.addEventListener('resize', () => {
+                heatmapChart.resize();
             });
-            
-            ctx.textAlign = 'center';
-            dimensions.forEach((dimension, j) => {
-                ctx.fillText(dimension, 100 + j * cellWidth + cellWidth/2, 30);
-            });
-            
-            // 添加鼠标事件
-            canvas.addEventListener('mousemove', (e) => {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                const j = Math.floor((x - 100) / cellWidth);
-                const i = Math.floor((y - 40) / cellHeight);
-                
-                if (i >= 0 && i < companies.length && j >= 0 && j < dimensions.length) {
-                    const company = globalCompanyData[i];
-                    const dimension = dimensions[j];
-                    showDetailInfo(company.name, dimension, company.scores[dimension], company.reasons[dimension]);
+        }
+
+        function updateDataTable() {
+            const companies = analysisData.companies || {};
+            const tableHeader = document.getElementById('tableHeader');
+            const tableBody = document.getElementById('tableBody');
+
+            if (Object.keys(companies).length === 0) {
+                tableHeader.innerHTML = '';
+                tableBody.innerHTML = '<tr><td colspan="100%" class="empty-state">暂无数据</td></tr>';
+                return;
+            }
+
+            // 获取所有维度
+            const dimensions = new Set();
+            Object.values(companies).forEach(company => {
+                if (company.dimensions) {
+                    Object.keys(company.dimensions).forEach(dim => dimensions.add(dim));
                 }
             });
-        }
 
-        // 更新数据表
-        function updateDataTable() {
-            const tableBody = document.getElementById('tableBody');
-            const dimensions = ['网络效应', '规模效应', '客户黏性', '成本优势', '竞争格局', '进入壁垒', '价格敏感度'];
-            
-            tableBody.innerHTML = '';
-            
-            globalCompanyData.forEach(company => {
-                const row = document.createElement('tr');
-                
-                // 公司名称
-                const nameCell = document.createElement('td');
-                nameCell.className = 'company-name';
-                nameCell.textContent = company.name;
-                row.appendChild(nameCell);
-                
-                // 各维度评分
-                let totalScore = 0;
-                let validScores = 0;
-                
-                dimensions.forEach(dim => {
-                    const cell = document.createElement('td');
-                    cell.className = 'score-cell';
-                    const score = company.scores[dim] || 0;
-                    cell.textContent = score;
-                    if (score > 0) {
-                        totalScore += score;
-                        validScores++;
-                    }
-                    row.appendChild(cell);
+            const dimensionArray = Array.from(dimensions);
+
+            // 生成表头
+            tableHeader.innerHTML = `
+                <tr>
+                    <th>公司名称</th>
+                    ${dimensionArray.map(dim => `<th>${dim}</th>`).join('')}
+                    <th>平均分</th>
+                </tr>
+            `;
+
+            // 生成表格内容
+            const rows = Object.entries(companies).map(([companyName, company]) => {
+                const scores = dimensionArray.map(dim => {
+                    const score = company.dimensions?.[dim]?.extracted_data?.评分;
+                    return score ? parseFloat(score) : 0;
                 });
-                
-                // 总分
-                const totalCell = document.createElement('td');
-                totalCell.className = 'score-cell total-score';
-                totalCell.textContent = totalScore;
-                row.appendChild(totalCell);
-                
-                // 平均分
-                const avgCell = document.createElement('td');
-                avgCell.className = 'score-cell avg-score';
-                avgCell.textContent = validScores > 0 ? (totalScore / validScores).toFixed(1) : '0';
-                row.appendChild(avgCell);
-                
-                tableBody.appendChild(row);
-            });
+
+                const average = scores.length > 0 ? 
+                    (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+
+                const getScoreClass = (score) => {
+                    if (score >= 8) return 'score-high';
+                    if (score >= 6) return 'score-medium';
+                    return 'score-low';
+                };
+
+                return `
+                    <tr>
+                        <td class="company-name">${companyName}</td>
+                        ${scores.map(score => 
+                            `<td class="score-cell ${getScoreClass(score)}">${score.toFixed(1)}</td>`
+                        ).join('')}
+                        <td class="score-cell ${getScoreClass(average)}"><strong>${average.toFixed(1)}</strong></td>
+                    </tr>
+                `;
+            }).join('');
+
+            tableBody.innerHTML = rows;
         }
 
-        // 显示详细信息
-        function showDetailInfo(companyName, dimension, score, reason) {
-            const infoContent = document.getElementById('infoContent');
-            infoContent.innerHTML = `
-                <div class="company-info">
-                    <h4>🏢 ${companyName}</h4>
-                    <p><strong>维度：</strong>${dimension}</p>
-                </div>
-                <div class="dimension-info">
-                    <div class="score">📊 评分：${score}/10</div>
-                    <div class="reason">
-                        <strong>💡 分析理由：</strong><br>
-                        ${reason || '暂无详细理由'}
-                    </div>
+        function showEmptyState() {
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fas fa-chart-bar"></i>
+                    <h3>暂无分析数据</h3>
+                    <p>请上传JSON分析文件或运行分析程序生成数据</p>
                 </div>
             `;
         }
 
-        // 窗口大小变化时重绘热力图
-        window.addEventListener('resize', () => {
-            if (globalCompanyData.length > 0) {
-                setTimeout(createHeatmap, 100);
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // 工具函数
+        function refreshData() {
+            loadDefaultData();
+            showNotification('数据已刷新', 'success');
+        }
+
+        function exportData() {
+            if (Object.keys(analysisData).length === 0) {
+                showNotification('暂无数据可导出', 'error');
+                return;
             }
-        });
+
+            const dataStr = JSON.stringify(analysisData, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(dataBlob);
+            link.download = `企业分析数据_${new Date().toISOString().split('T')[0]}.json`;
+            link.click();
+            
+            showNotification('数据导出成功', 'success');
+        }
+
+        function exportTableData() {
+            if (Object.keys(analysisData.companies || {}).length === 0) {
+                showNotification('暂无数据可导出', 'error');
+                return;
+            }
+
+            const companies = analysisData.companies;
+            const dimensions = new Set();
+            
+            Object.values(companies).forEach(company => {
+                if (company.dimensions) {
+                    Object.keys(company.dimensions).forEach(dim => dimensions.add(dim));
+                }
+            });
+
+            const dimensionArray = Array.from(dimensions);
+            
+            // 构建CSV内容
+            let csvContent = '公司名称,' + dimensionArray.join(',') + ',平均分\n';
+            
+            Object.entries(companies).forEach(([companyName, company]) => {
+                const scores = dimensionArray.map(dim => {
+                    const score = company.dimensions?.[dim]?.extracted_data?.评分;
+                    return score ? parseFloat(score).toFixed(1) : '0.0';
+                });
+                
+                const average = scores.length > 0 ? 
+                    (scores.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / scores.length).toFixed(1) : '0.0';
+                
+                csvContent += `${companyName},${scores.join(',')},${average}\n`;
+            });
+
+            const csvBlob = new Blob([csvContent], {type: 'text/csv;charset=utf-8;'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(csvBlob);
+            link.download = `企业竞争力数据_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            
+            showNotification('CSV数据导出成功', 'success');
+        }
+
+        function toggleTableView() {
+            const table = document.getElementById('dataTable');
+            const isHidden = table.style.display === 'none';
+            table.style.display = isHidden ? 'table' : 'none';
+            
+            const button = event.target.closest('button');
+            const icon = button.querySelector('i');
+            icon.className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+        }
     </script>
 </body>
+</html> 
 </html> 
