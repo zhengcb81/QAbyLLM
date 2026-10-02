@@ -51,4 +51,23 @@ Thumbs.db
 
 # 临时文件
 *.tmp
-*.temp 
+*.temp
+
+# RAG系统相关文件 🆕（运行时生成，见 README/USAGE_GUIDE；本地保留不入库）
+vector_db/
+test_vector_db/
+rag_analysis_*.json
+test_config.yaml
+
+# 模型缓存
+.cache/
+models/
+sentence_transformers/
+
+# 文档处理临时文件
+*.pdf~
+*.docx~
+*.xlsx~
+
+# 测试文件
+temp_*/

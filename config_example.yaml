@@ -9,8 +9,51 @@ api:
   openai_model: "gpt-4o"
   # 是否使用OpenAI的网络搜索功能
   use_openai_search: true
+  
+  # DeepSeek API配置 (更便宜的替代方案)
+  deepseek_api_key: "your_deepseek_api_key_here"
+  deepseek_model: "deepseek-chat"
+  deepseek_base_url: "https://api.deepseek.com"
+  
+  # Qwen API配置
+  qwen_api_key: "your_qwen_api_key_here"
+  qwen_model: "qwen-turbo"
+  qwen_base_url: "https://dashscope.aliyuncs.com/api/v1"
 
-# 本地知识库配置
+# 运行模式配置
+mode:
+  # 可选: "online" (联网模式) 或 "local" (本地RAG模式)
+  type: "online"
+  # 本地模式时使用的API提供商: "deepseek", "qwen", "openai"
+  local_api_provider: "deepseek"
+
+# 本地RAG知识库配置
+local_rag:
+  enabled: false
+  # 单公司分析配置
+  company_name: "海康威视"
+  documents_folder: "knowledge_base"
+  # 支持的文件格式
+  supported_formats: ["txt", "md", "json", "pdf", "docx", "xlsx"]
+  # 向量数据库配置
+  vector_db:
+    type: "chromadb"
+    persist_directory: "./vector_db"
+    collection_name: "company_knowledge"
+  # 文本分块配置
+  chunking:
+    chunk_size: 1000
+    chunk_overlap: 200
+  # 嵌入模型配置
+  embedding:
+    model_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    device: "cpu"
+  # 检索配置
+  retrieval:
+    top_k: 5
+    similarity_threshold: 0.7
+
+# 本地知识库配置 (保持向后兼容)
 local_knowledge:
   enabled: true
   documents_folder: "knowledge_base"
@@ -45,4 +88,118 @@ visualization:
   enabled: true
   chart_types: ["radar", "bar", "heatmap"]
   output_folder: "charts"
-  show_charts: true 
+  show_charts: true
+
+# 答案验证系统配置
+answer_verification:
+  # 启用的验证方法
+  enabled_methods:
+    - "fact_check"
+    - "source_validation" 
+    - "consistency_check"
+    - "expert_assessment"
+    - "cross_reference"
+  
+  # 验证阈值配置
+  thresholds:
+    min_confidence: 0.7
+    similarity_threshold: 0.15
+    keyword_overlap_threshold: 1
+    
+  # 事实检查配置
+  fact_checking:
+    # 停用词列表
+    stop_words:
+      - "的"
+      - "了"
+      - "是"
+      - "在"
+      - "和"
+      - "与"
+      - "及"
+      - "等"
+      - "这个"
+      - "那个"
+      - "一个"
+      - "可以"
+      - "能够"
+      - "通过"
+      - "通常"
+      - "作为"
+      - "各种"
+      - "不同"
+    
+    # 修饰词列表（用于核心事实提取）
+    modifiers:
+      - "通常"
+      - "一般"
+      - "经常"
+      - "主要"
+      - "基本"
+      - "特别"
+      - "非常"
+      - "十分"
+      - "极其"
+      - "重要"
+    
+    # 连接词列表
+    connectors:
+      - "而且"
+      - "并且"
+      - "另外"
+      - "此外"
+      - "同时"
+      - "然而"
+      - "但是"
+      - "不过"
+      - "因此"
+      - "所以"
+    
+    # 模糊词列表
+    vague_words:
+      - "可能"
+      - "也许"
+      - "大概"
+      - "据说"
+      - "认为"
+      - "觉得"
+      - "一些"
+      - "各种"
+      - "不同"
+      - "或许"
+    
+    # 事实性指示词
+    factual_indicators:
+      - "是"
+      - "有"
+      - "为"
+      - "包括"
+      - "称为"
+      - "技术"
+      - "系统"
+      - "方法"
+      - "分支"
+      - "领域"
+      - "可以"
+      - "能够"
+      - "实现"
+      - "处理"
+      - "支持"
+      - "提供"
+      - "包含"
+      - "属于"
+      - "分为"
+      - "基于"
+      - "使用"
+      - "应用"
+  
+  # 专家知识库（示例）
+  expert_knowledge_base:
+    "人工智能是计算机科学的一个分支":
+      is_true: true
+      confidence: 0.9
+      evidence: "权威计算机科学教材定义"
+    "机器学习是人工智能的核心技术":
+      is_true: true
+      confidence: 0.95
+      evidence: "广泛接受的学术共识" 
