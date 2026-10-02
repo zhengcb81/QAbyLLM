@@ -3,6 +3,7 @@
 """
 企业竞争力分析问答系统
 支持多公司分析和交互式可视化
+支持在线模式和本地RAG模式
 """
 
 import os
@@ -14,6 +15,14 @@ from datetime import datetime
 from typing import Dict, List, Any, Optional
 import re
 
+# 导入RAG系统
+try:
+    from rag_system import RAGSystem
+    RAG_AVAILABLE = True
+except ImportError:
+    RAG_AVAILABLE = False
+    print("⚠️ RAG系统不可用，请安装相关依赖包")
+
 class QASystem:
     """智能问答系统主类"""
     
@@ -22,7 +31,17 @@ class QASystem:
         self.config_path = config_path
         self.config = self.load_config()
         self.openai_client = None
-        self.setup_openai()
+        self.rag_system = None
+        
+        # 根据配置选择模式
+        self.mode = self.config.get('mode', {}).get('type', 'online')
+        
+        if self.mode == 'online':
+            self.setup_openai()
+        elif self.mode == 'local' and RAG_AVAILABLE:
+            self.setup_rag_system()
+        else:
+            print(f"❌ 不支持的模式: {self.mode}")
         
     def load_config(self) -> Dict[str, Any]:
         """加载配置文件"""
@@ -40,10 +59,22 @@ class QASystem:
     def get_default_config(self) -> Dict[str, Any]:
         """获取默认配置"""
         return {
+            'mode': {
+                'type': 'online',
+                'local_api_provider': 'deepseek'
+            },
             'api': {
                 'openai_api_key': 'your_openai_api_key_here',
                 'openai_model': 'gpt-4o',
-                'use_openai_search': True
+                'use_openai_search': True,
+                'deepseek_api_key': 'your_deepseek_api_key_here',
+                'deepseek_model': 'deepseek-chat',
+                'deepseek_base_url': 'https://api.deepseek.com'
+            },
+            'local_rag': {
+                'enabled': False,
+                'company_name': '海康威视',
+                'documents_folder': 'knowledge_base'
             },
             'analysis': {
                 'companies': ['小米集团', '华为', '苹果', '三星']
@@ -76,8 +107,16 @@ class QASystem:
         except Exception as e:
             print(f"❌ OpenAI客户端初始化失败: {e}")
     
+    def setup_rag_system(self):
+        """设置RAG系统"""
+        try:
+            self.rag_system = RAGSystem(self.config_path)
+            print("✅ RAG系统初始化成功")
+        except Exception as e:
+            print(f"❌ RAG系统初始化失败: {e}")
+    
     def ask_question(self, question: str, use_search: bool = True) -> Dict[str, Any]:
-        """提问并获取答案"""
+        """提问并获取答案（在线模式）"""
         if not self.openai_client:
             return {
                 'question': question,
@@ -151,7 +190,7 @@ class QASystem:
             return None
     
     def analyze_companies(self) -> List[Dict[str, Any]]:
-        """分析多个公司"""
+        """分析多个公司（在线模式）"""
         companies = self.config.get('analysis', {}).get('companies', [])
         questions = self.config.get('questions', [])
         results = []
@@ -163,6 +202,7 @@ class QASystem:
             company_result = {
                 'company': company,
                 'analysis_time': datetime.now().isoformat(),
+                'analysis_mode': 'online',
                 'dimensions': {}
             }
             
@@ -194,6 +234,13 @@ class QASystem:
         
         return results
     
+    def analyze_company_with_rag(self) -> Dict[str, Any]:
+        """使用RAG分析单个公司（本地模式）"""
+        if not self.rag_system:
+            raise Exception("RAG系统未初始化")
+        
+        return self.rag_system.analyze_company_with_rag()
+    
     def get_dimension_name(self, question: str) -> str:
         """从问题中提取维度名称"""
         if "网络效应" in question:
@@ -213,14 +260,19 @@ class QASystem:
         else:
             return "未知维度"
     
-    def save_results(self, results: List[Dict[str, Any]]):
+    def save_results(self, results: Any, filename: str = None):
         """保存分析结果"""
-        output_path = self.config.get('output', {}).get('file_path', 'multi_company_analysis.json')
+        if filename is None:
+            if self.mode == 'local':
+                company_name = self.config.get('local_rag', {}).get('company_name', '未知公司')
+                filename = f"rag_analysis_{company_name}.json"
+            else:
+                filename = self.config.get('output', {}).get('file_path', 'multi_company_analysis.json')
         
         try:
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(results, f, ensure_ascii=False, indent=2)
-            print(f"✅ 结果已保存到: {output_path}")
+            print(f"✅ 结果已保存到: {filename}")
         except Exception as e:
             print(f"❌ 保存结果失败: {e}")
     
@@ -228,21 +280,41 @@ class QASystem:
         """运行完整分析"""
         print("🎯 企业竞争力分析系统启动")
         print("=" * 50)
+        print(f"📋 运行模式: {self.mode}")
         
         # 检查配置
         if not os.path.exists(self.config_path):
             print(f"⚠️ 配置文件不存在，请先复制 config_example.yaml 为 {self.config_path}")
             return
         
-        # 分析公司
-        results = self.analyze_companies()
-        
-        # 保存结果
-        self.save_results(results)
-        
-        print("\n🎉 分析完成！")
-        print(f"📊 共分析了 {len(results)} 家公司")
-        print("💡 可以使用交互式仪表板查看结果：python start_dashboard.py")
+        try:
+            if self.mode == 'online':
+                # 在线模式：分析多个公司
+                results = self.analyze_companies()
+                self.save_results(results)
+                print(f"\n🎉 在线分析完成！共分析了 {len(results)} 家公司")
+                
+            elif self.mode == 'local':
+                # 本地RAG模式：分析单个公司
+                if not RAG_AVAILABLE:
+                    print("❌ RAG系统不可用，请安装相关依赖包")
+                    return
+                
+                company_name = self.config.get('local_rag', {}).get('company_name', '海康威视')
+                print(f"📊 本地RAG模式：分析公司 {company_name}")
+                
+                result = self.analyze_company_with_rag()
+                self.save_results(result)
+                print(f"\n🎉 本地RAG分析完成！")
+                
+            else:
+                print(f"❌ 不支持的运行模式: {self.mode}")
+                return
+            
+            print("💡 可以使用交互式仪表板查看结果：python start_dashboard.py")
+            
+        except Exception as e:
+            print(f"❌ 分析过程中出现错误: {e}")
 
 def main():
     """主函数"""
