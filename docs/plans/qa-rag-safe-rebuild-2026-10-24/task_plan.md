@@ -66,14 +66,15 @@ UI/启动脚本、document_processor.py、hybrid_retriever.py、providers/keys�
 - 证据：testlogs/acceptance-run.txt、vector-db-unchanged.txt。
 
 ### Phase 6: 提交冻结 + 独立审查
-- **Status:** in_progress
-- 任务分支提交并冻结 SHA；未参与实现的独立 agent 审查完整 diff，挑战 staging 顺序、异常注入、
-  崩溃恢复、输入重排、范围隔离；自行运行测试并添加至少一个失败注入反例；发现修复并复审 PASS。
+- **Status:** complete
+- 实现 SHA `5d13da5`；第一轮审查（agent 网络中断，发现以 6 个反例测试保留）F1 major/F2 minor；
+  修复 SHA `c762e4d`；第二轮独立复审 PASS-with-findings（review/review-report.md），
+  残留仅 2 条信息级观察（O1 合法为空边界 / O2 测试钩子路径），无需返工。
 
 ### Phase 7: 交接交付
-- **Status:** pending
-- docs/handoff/QA-RAG-2026-10-24/handoff.md/json、审查报告、测试日志、清理证据；
-  不交付 vector_db、真实配置或公司报告。
+- **Status:** complete
+- docs/handoff/QA-RAG-2026-10-24/handoff.md + handoff.json（最终 SHA、审查结论、测试与清理证据）；
+  未交付 vector_db、真实配置或公司报告。
 
 ## Decisions Made
 
@@ -92,4 +93,4 @@ UI/启动脚本、document_processor.py、hybrid_retriever.py、providers/keys�
 
 ## Next Step
 
-Phase 6：提交并冻结 SHA，启动独立 agent 审查。
+无 —— 全部 Phase 完成；卡 QA-RAG-SAFE-REBUILD 交付关闭（最终 SHA c762e4d）。

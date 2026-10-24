@@ -39,6 +39,22 @@
 - 源项目 C:/Users/郑曾波/Projects/QAbyLLM/vector_db：测试前后 find 清单（6 文件）与聚合 SHA-256（53efc2bdfac5abba237056e20e72ab290eb0ad638a00b982b1b19d96271ed61d）完全一致；见 testlogs/vector-db-unchanged.txt。
 - 所有构建/中断/清理测试仅使用 pytest tmp_path（本卡临时根），真实 chroma 目录建在临时根内，会话结束由 pytest 管理。
 
+## 2026-10-24 会话 2（独立审查与修复）
+
+| 时间 | 事件 |
+|---|---|
+| 23:20 | 提交实现并冻结 SHA `5d13da5`（15 文件，+1695/-136） |
+| 23:25 | 第一轮独立审查 agent 启动；审阅 diff、自跑测试、追加 6 个失败注入反例到单元测试文件 |
+| 23:47 | 第一轮 agent 因网络故障中断（报告未写出）；发现以反例测试保留：F1（major，单文件解析失败被吞后报 True 发布缺文档新代）、F2（minor，清理正则过松误删外部 gen-* 目录）+ 4 个预期通过的回归防线 |
+| 23:55 | 修复 F1：新增 _read_document_strict 与原始提取器 _extract_pdf/_extract_docx/_extract_excel（抛错）；公开 read_document/read_* 保持吞错返回空串的兼容行为；构建链路改用严格读取器；两个解析注入测试迁移到新 seam |
+| 23:58 | 修复 F2：GENERATION_NAME_PATTERN 收紧为 ^gen-\d{8}-\d{6}-\d{6}-[0-9a-f]{8}$（cleanup 与 _load_active_pointer 共用） |
+| 00:02 | 全套 28 passed（22 实现 + 6 反例）；提交修复 SHA `c762e4d` |
+| 00:05 | 第二轮独立复审 agent 启动：验证修复完备性、整体挑战、自跑测试、写正式 review-report.md |
+
+| 00:05 | 第二轮独立复审 agent 启动：验证修复完备性、整体挑战、自跑测试、写正式 review-report.md |
+| 00:25 | 第二轮复审完成：F1/F2 修复验证完备（严格读取器无吞错路径、正则 20000/20000 匹配）；定向 28 passed、全套 97 passed；结论 PASS-with-findings（残留 O1/O2 均信息级） |
+| 00:30 | handoff.md/handoff.json 回填最终 SHA c762e4d 与审查结论；PWF Phase 6/7 关闭；最终提交 |
+
 ## Next
 
-- 提交并冻结 SHA → 独立 agent 审查（挑战 staging 顺序、异常注入、崩溃恢复、输入重排、范围隔离；自行运行测试并添加至少一个失败注入反例）→ 修复复审 → handoff。
+无 —— 交付关闭。

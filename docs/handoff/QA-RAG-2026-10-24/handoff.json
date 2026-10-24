@@ -1,0 +1,80 @@
+{
+  "card": "QA-RAG-SAFE-REBUILD",
+  "date": "2026-10-24",
+  "repo": "QAbyLLM (worktree C:/Users/郑曾波/Projects/QAbyLLM-rag-safe-rebuild)",
+  "branch": "codex/qa-rag-safe-rebuild-20261024",
+  "frozen_base": "ad389f84cd15e54207fc6fcfe4881f86edac63f1",
+  "implementation_commit": "5d13da5f79b459b62966df6269e37434f4f624ef",
+  "final_commit": "c762e4de96feff3ac0f2b3d3bd3bfe9d72398f99",
+  "review": {
+    "round1": {
+      "agent": "independent reviewer (interrupted by network failure before writing report)",
+      "artifacts": "6 counterexample tests (test_review_*) embedded in tests/unit/test_rag_safe_rebuild.py",
+      "findings": [
+        {
+          "id": "F1",
+          "severity": "major",
+          "summary": "single-file parse failure swallowed by read_document; build reported True and published generation silently missing that document",
+          "fixed_in": "c762e4d"
+        },
+        {
+          "id": "F2",
+          "severity": "minor",
+          "summary": "cleanup GENERATION_NAME_PATTERN too permissive; could delete external gen-* dirs",
+          "fixed_in": "c762e4d"
+        }
+      ]
+    },
+    "round2": {
+      "agent": "independent reviewer (fresh, not involved in impl or round1)",
+      "report": "docs/plans/qa-rag-safe-rebuild-2026-10-24/review/review-report.md",
+      "verdict": "PASS-with-findings",
+      "verdict_sha": "c762e4de96feff3ac0f2b3d3bd3bfe9d72398f99",
+      "residual": [
+        {
+          "id": "O1",
+          "severity": "info",
+          "summary": "unsupported extensions in non-default supported_formats are silently skipped (declared legal-empty boundary)"
+        },
+        {
+          "id": "O2",
+          "severity": "info",
+          "summary": "after_publish test hook raising Exception returns False though pointer already published (test-only path, restart converges)"
+        }
+      ]
+    }
+  },
+  "acceptance": {
+    "card_command": "python -B -m pytest -q tests/unit/test_rag_safe_rebuild.py tests/integration/test_rag_rebuild_lifecycle.py",
+    "card_command_result": "28 passed (21 unit = 15 impl + 6 review counterexamples; 7 integration), offline only",
+    "existing_suite": "python -B -m pytest -q tests/ -> 97 passed",
+    "red_evidence": "docs/plans/qa-rag-safe-rebuild-2026-10-24/testlogs/red-old-code-*.txt (3 preserve-tests failed on frozen base ad389f8)"
+  },
+  "cleanup_evidence": {
+    "source_vector_db": "C:/Users/郑曾波/Projects/QAbyLLM/vector_db unchanged: 6 files, aggregate sha256 53efc2bdfac5abba237056e20e72ab290eb0ad638a00b982b1b19d96271ed61d before/after",
+    "log": "docs/plans/qa-rag-safe-rebuild-2026-10-24/testlogs/vector-db-unchanged.txt"
+  },
+  "scope": {
+    "allowed_written": [
+      "rag_system.py",
+      "tests/unit/test_rag_safe_rebuild.py",
+      "tests/integration/test_rag_rebuild_lifecycle.py",
+      "tests/fixtures/rag_safe_rebuild/**",
+      "docs/plans/qa-rag-safe-rebuild-2026-10-24/**",
+      "docs/handoff/QA-RAG-2026-10-24/**"
+    ],
+    "diff_stat": " 15 files changed, 1927 insertions(+), 182 deletions(-)"
+  },
+  "deliverables": {
+    "handoff_md": "docs/handoff/QA-RAG-2026-10-24/handoff.md",
+    "handoff_json": "docs/handoff/QA-RAG-2026-10-24/handoff.json",
+    "pwf": "docs/plans/qa-rag-safe-rebuild-2026-10-24/",
+    "review_report": "docs/plans/qa-rag-safe-rebuild-2026-10-24/review/review-report.md",
+    "testlogs": "docs/plans/qa-rag-safe-rebuild-2026-10-24/testlogs/"
+  },
+  "not_delivered": [
+    "vector_db data",
+    "real config.yaml",
+    "company reports (fixtures are synthetic)"
+  ]
+}
