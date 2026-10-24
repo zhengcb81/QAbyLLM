@@ -288,7 +288,10 @@ def test_parse_failure_preserves_old_library(tmp_path, monkeypatch):
     before_texts, _ = query_texts(system)
     pointer_before = read_pointer(system)
 
-    system.read_document = lambda path: ""  # 注入解析失败：所有文档读为空
+    def failing_read(path):
+        raise RuntimeError("注入的解析失败：文档读取抛错")
+
+    system._read_document_strict = failing_read
     assert system.build_knowledge_base() is False
     assert query_texts(system)[0] == before_texts, "解析失败后旧库必须保持可检索"
     if pointer_before is not None:
@@ -557,3 +560,168 @@ def test_false_return_means_old_queryable_by_fresh_instance(tmp_path, fake_store
 
     fresh = bind_fresh(tmp_root, docs_dir)
     assert query_texts(fresh)[0] == v1_texts, "重启后旧库必须仍可查询"
+
+
+# ---- 审查员反例 ----
+# 以下测试由独立审查员追加（review 2026-10-24）。每条注入一个既有测试未覆盖的故障/边界，
+# 断言否定性安全属性：旧库不被破坏 / 不得报成功 / 可恢复。
+# 预期结果标注在 docstring：预期通过 = 回归防线；预期失败 = 审查发现（见 review-report.md）。
+
+
+def test_review_pointer_tmp_write_failure_returns_false_and_recovers(tmp_path, fake_store):
+    """【预期通过】发布时指针 tmp 写入失败：不得报成功、指针字节不变、移除阻塞后可恢复。
+    注入 1：上次崩溃遗留 active.json.tmp 残留文件（不得阻塞下次发布）；
+    注入 2：active.json.tmp 是目录（open 失败 = 发布通道断路）。"""
+    docs_dir = tmp_path / "docs"
+    write_docs(docs_dir)
+    system = make_system(tmp_path / "root", docs_dir)
+    system.setup_vector_db()
+    assert system.build_knowledge_base() is True
+
+    root, generations_dir, pointer_path = layout_paths(system)
+
+    # 注入 1：tmp 残留文件不阻塞发布
+    (root / "active.json.tmp").write_text("上次中断留下的半截 JSON", encoding="utf-8")
+    assert system.build_knowledge_base() is True, "残留 tmp 文件不得阻塞下次发布"
+    pointer_before = read_pointer(system)
+    v2_texts, _ = query_texts(system)
+
+    # 注入 2：tmp 路径被目录占位 → 发布通道断路
+    blocker = root / "active.json.tmp"
+    if blocker.exists():
+        blocker.unlink()
+    blocker.mkdir()
+    assert system.build_knowledge_base() is False, "指针 tmp 写入失败必须返回 False"
+    assert read_pointer(system) == pointer_before, "发布失败后指针字节不得改变"
+    assert query_texts(system)[0] == v2_texts, "旧库必须仍可检索"
+
+    # 可恢复：移除注入的阻塞后重建成功
+    blocker.rmdir()
+    assert system.build_knowledge_base() is True
+    fresh = bind_fresh(tmp_path / "root", docs_dir)
+    assert query_texts(fresh)[0]
+
+
+def test_review_scan_documents_crash_returns_false_and_keeps_old(tmp_path, fake_store, monkeypatch):
+    """【预期通过】scan_documents 抛出异常（如权限/IO 错误）：必须返回 False、指针不变、旧库可查。"""
+    docs_dir = tmp_path / "docs"
+    write_docs(docs_dir)
+    system = make_system(tmp_path / "root", docs_dir)
+    system.setup_vector_db()
+    assert system.build_knowledge_base() is True
+    pointer_before = read_pointer(system)
+    v1_texts, _ = query_texts(system)
+
+    def scan_boom(folder_path):
+        raise RuntimeError("注入的扫描失败（如目录权限拒绝）")
+
+    monkeypatch.setattr(system, "scan_documents", scan_boom)
+    assert system.build_knowledge_base() is False
+    assert read_pointer(system) == pointer_before
+    assert query_texts(system)[0] == v1_texts
+
+
+def test_review_staging_dir_creation_failure_returns_false(tmp_path, fake_store, monkeypatch):
+    """【预期通过】staging 目录创建失败（磁盘满/权限拒绝）：必须返回 False、指针不变、不产生新目录。"""
+    docs_dir = tmp_path / "docs"
+    write_docs(docs_dir)
+    system = make_system(tmp_path / "root", docs_dir)
+    system.setup_vector_db()
+    assert system.build_knowledge_base() is True
+    pointer_before = read_pointer(system)
+    _, generations_dir, _ = layout_paths(system)
+    gens_before = sorted(p.name for p in generations_dir.iterdir())
+
+    def mkdir_boom(generations_dir):
+        raise OSError("注入的 staging 目录创建失败（磁盘满）")
+
+    monkeypatch.setattr(system, "_new_generation_dir", mkdir_boom)
+    assert system.build_knowledge_base() is False
+    assert read_pointer(system) == pointer_before
+    assert sorted(p.name for p in generations_dir.iterdir()) == gens_before, \
+        "staging 创建失败不得留下任何目录副作用"
+
+
+def test_review_active_gen_dir_deleted_externally_degrades_and_recovers(tmp_path, fake_store):
+    """【预期通过】active 指向的 generation 目录被外部删除：setup 不得崩溃、检索降级为空，
+    一次成功重建后恢复。"""
+    docs_dir = tmp_path / "docs"
+    write_docs(docs_dir)
+    tmp_root = tmp_path / "root"
+    system = make_system(tmp_root, docs_dir)
+    system.setup_vector_db()
+    assert system.build_knowledge_base() is True
+
+    _, generations_dir, pointer_path = layout_paths(system)
+    active_gen = json.loads(pointer_path.read_text(encoding="utf-8"))["generation"]
+    shutil.rmtree(generations_dir / active_gen)  # 注入：外部误删 active generation
+
+    fresh = make_system(tmp_root, docs_dir)
+    fresh.setup_vector_db()  # 不得抛异常
+    assert fresh.collection is None, "active 目录缺失时不得绑定到任何集合"
+    assert fresh.retrieve_relevant_docs("任意查询") == [], "降级检索应返回空而非崩溃"
+
+    # 恢复：一次成功重建即可发布新指针
+    assert fresh.build_knowledge_base() is True
+    recovered = bind_fresh(tmp_root, docs_dir)
+    texts, _ = query_texts(recovered)
+    assert texts, "重建后必须恢复可检索"
+
+
+def test_review_single_file_parse_failure_must_not_report_success(tmp_path, fake_store):
+    """【修复后应通过；修复前为审查发现 F1】单文件解析失败（如 Windows 文件被占用导致
+    OSError）不得被吞掉后报成功：build 必须返回 False、指针不变，绝不发布悄悄缺少
+    该文档的新代（已索引文档静默消失）。
+    修复说明（F1）：构建链路改用 _read_document_strict（解析异常上抛），
+    本反例的注入点随之从 read_document 迁移到 _read_document_strict。"""
+    docs_dir = tmp_path / "docs"
+    write_docs(docs_dir)
+    system = make_system(tmp_path / "root", docs_dir)
+    system.setup_vector_db()
+    assert system.build_knowledge_base() is True
+    _, v1_rels = query_texts(system)
+    assert "doc_beta.txt" in set(v1_rels), "前置：beta 在旧库中已索引"
+    pointer_before = read_pointer(system)
+
+    real_read = system._read_document_strict
+
+    def flaky_read(path):
+        if str(path).replace("\\", "/").endswith("doc_beta.txt"):
+            raise OSError("注入的解析失败：文件被另一进程占用")
+        return real_read(path)
+
+    system._read_document_strict = flaky_read
+    result = system.build_knowledge_base()
+    assert result is False, (
+        "单文件解析失败不得被吞掉后报成功：实现不得发布缺少该文档的新代并返回 True"
+        "（详见 review-report.md 发现 F1）")
+    assert read_pointer(system) == pointer_before, "解析失败后指针不得切换"
+    assert query_texts(system)[0], "旧库必须仍可检索"
+
+
+def test_review_cleanup_spares_non_system_named_dirs(tmp_path, fake_store):
+    """【预期失败 = 审查发现】清理只允许删除“本系统命名”的 generation 目录。
+    注入 gen-not-a-real-generation（匹配宽松正则 ^gen-[0-9A-Za-z._-]+$ 但并非本系统
+    的时间戳+UUID 命名）与 not_a_gen_at_all（不匹配正则）。后者应存活；
+    前者按 docstring“只清理本系统命名的目录”也应存活——当前实现会误删
+    （详见 review-report.md 发现 F2）。"""
+    docs_dir = tmp_path / "docs"
+    write_docs(docs_dir)
+    system = make_system(tmp_path / "root", docs_dir)
+    system.setup_vector_db()
+    assert system.build_knowledge_base() is True
+    _, generations_dir, pointer_path = layout_paths(system)
+    active_gen = json.loads(pointer_path.read_text(encoding="utf-8"))["generation"]
+
+    loose_match_dir = generations_dir / "gen-not-a-real-generation"
+    loose_match_dir.mkdir()
+    no_match_dir = generations_dir / "not_a_gen_at_all"
+    no_match_dir.mkdir()
+
+    system.cleanup_orphan_generations()
+
+    assert no_match_dir.exists(), "不匹配正则的目录必须存活"
+    assert loose_match_dir.exists(), (
+        "名为 gen-* 但并非本系统命名（时间戳+UUID）的目录不得被清理删除；"
+        "docstring 声称只清理本系统命名的 generation 目录（review-report.md 发现 F2）")
+    assert (generations_dir / active_gen).exists(), "active 必须存活"

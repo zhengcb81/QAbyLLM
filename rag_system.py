@@ -46,7 +46,8 @@ logger = logging.getLogger(__name__)
 GENERATIONS_DIRNAME = "generations"
 ACTIVE_POINTER_FILENAME = "active.json"
 STAGING_ADD_BATCH_SIZE = 4096
-GENERATION_NAME_PATTERN = re.compile(r"^gen-[0-9A-Za-z._-]+$")
+# 本系统 generation 命名：gen-<YYYYmmdd>-<HHMMSS>-<微秒6位>-<uuid8hex>
+GENERATION_NAME_PATTERN = re.compile(r"^gen-\d{8}-\d{6}-\d{6}-[0-9a-f]{8}$")
 
 # 进程内仍存活的 chroma 客户端（强引用登记表）。chroma 的后台线程会在客户端对象
 # 被 GC 后仍持有 sqlite 文件锁（Windows 上会锁死目录删除），因此用强引用确保
@@ -334,71 +335,83 @@ class RAGSystem:
             logger.error(f"❌ API客户端设置失败: {e}")
 
     def read_document(self, file_path: str) -> str:
-        """读取文档内容"""
+        """读取文档内容（公开兼容接口：解析失败返回空串）"""
         try:
-            file_ext = Path(file_path).suffix.lower()
-
-            if file_ext == '.txt':
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
-            elif file_ext == '.md':
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    return f.read()
-            elif file_ext == '.json':
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    return json.dumps(data, ensure_ascii=False, indent=2)
-            elif file_ext == '.pdf':
-                return self.read_pdf(file_path)
-            elif file_ext == '.docx':
-                return self.read_docx(file_path)
-            elif file_ext in ['.xlsx', '.xls']:
-                return self.read_excel(file_path)
-            else:
-                logger.warning(f"不支持的文件格式: {file_ext}")
-                return ""
+            return self._read_document_strict(file_path)
         except Exception as e:
             logger.error(f"读取文档失败 {file_path}: {e}")
             return ""
 
+    def _read_document_strict(self, file_path: str) -> str:
+        """读取文档内容（严格版，构建链路使用）：解析失败抛 RuntimeError，
+        不允许吞错——否则 build 会发布悄悄缺少该文档的新代并报成功。
+        仅“合法为空”（空文件/纯空白/不支持的扩展名）返回空串。"""
+        file_ext = Path(file_path).suffix.lower()
+
+        if file_ext in ('.txt', '.md'):
+            with open(file_path, 'r', encoding='utf-8') as f:
+                return f.read()
+        elif file_ext == '.json':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return json.dumps(data, ensure_ascii=False, indent=2)
+        elif file_ext == '.pdf':
+            return self._extract_pdf(file_path)
+        elif file_ext == '.docx':
+            return self._extract_docx(file_path)
+        elif file_ext in ('.xlsx', '.xls'):
+            return self._extract_excel(file_path)
+        else:
+            logger.warning(f"不支持的文件格式: {file_ext}")
+            return ""
+
+    def _extract_pdf(self, file_path: str) -> str:
+        with open(file_path, 'rb') as f:
+            reader = PyPDF2.PdfReader(f)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text() + "\n"
+            return text
+
+    def _extract_docx(self, file_path: str) -> str:
+        doc = Document(file_path)
+        text = ""
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        return text
+
+    def _extract_excel(self, file_path: str) -> str:
+        workbook = openpyxl.load_workbook(file_path)
+        text = ""
+        for sheet_name in workbook.sheetnames:
+            sheet = workbook[sheet_name]
+            text += f"工作表: {sheet_name}\n"
+            for row in sheet.iter_rows(values_only=True):
+                row_text = "\t".join([str(cell) if cell is not None else "" for cell in row])
+                text += row_text + "\n"
+            text += "\n"
+        return text
+
     def read_pdf(self, file_path: str) -> str:
-        """读取PDF文件"""
+        """读取PDF文件（公开兼容接口：失败返回空串）"""
         try:
-            with open(file_path, 'rb') as f:
-                reader = PyPDF2.PdfReader(f)
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text() + "\n"
-                return text
+            return self._extract_pdf(file_path)
         except Exception as e:
             logger.error(f"读取PDF失败 {file_path}: {e}")
             return ""
 
     def read_docx(self, file_path: str) -> str:
-        """读取Word文档"""
+        """读取Word文档（公开兼容接口：失败返回空串）"""
         try:
-            doc = Document(file_path)
-            text = ""
-            for paragraph in doc.paragraphs:
-                text += paragraph.text + "\n"
-            return text
+            return self._extract_docx(file_path)
         except Exception as e:
             logger.error(f"读取Word文档失败 {file_path}: {e}")
             return ""
 
     def read_excel(self, file_path: str) -> str:
-        """读取Excel文件"""
+        """读取Excel文件（公开兼容接口：失败返回空串）"""
         try:
-            workbook = openpyxl.load_workbook(file_path)
-            text = ""
-            for sheet_name in workbook.sheetnames:
-                sheet = workbook[sheet_name]
-                text += f"工作表: {sheet_name}\n"
-                for row in sheet.iter_rows(values_only=True):
-                    row_text = "\t".join([str(cell) if cell is not None else "" for cell in row])
-                    text += row_text + "\n"
-                text += "\n"
-            return text
+            return self._extract_excel(file_path)
         except Exception as e:
             logger.error(f"读取Excel文件失败 {file_path}: {e}")
             return ""
@@ -558,7 +571,12 @@ class RAGSystem:
 
             for i, doc_path in enumerate(documents):
                 logger.info(f"处理文档 {i+1}/{len(documents)}: {os.path.basename(doc_path)}")
-                content = self.read_document(doc_path)
+                try:
+                    content = self._read_document_strict(doc_path)
+                except Exception as e:
+                    # 解析失败不得吞掉：中止本次构建（False），绝不发布缺少该文档的新代
+                    raise RuntimeError(
+                        f"文档解析失败（本次构建中止，旧知识库不受影响）: {doc_path}: {e}") from e
                 if not content or not content.strip():
                     continue
                 doc_relpath = self._normalize_relpath(doc_path, folder_path)
