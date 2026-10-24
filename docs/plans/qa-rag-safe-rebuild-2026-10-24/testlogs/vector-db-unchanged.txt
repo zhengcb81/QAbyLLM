@@ -1,0 +1,25 @@
+== 原 vector_db（源项目 QAbyLLM）清理证据 ==
+时间: 2026-10-24 23:06:36
+
+-- 测试运行前文件清单（6 文件）--
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/data_level0.bin
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/header.bin
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/index_metadata.pickle
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/length.bin
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/link_lists.bin
+vector_db/chroma.sqlite3
+
+-- 测试运行后文件清单 --
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/data_level0.bin
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/header.bin
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/index_metadata.pickle
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/length.bin
+vector_db/6d28a5cf-d497-4099-83cc-6fae407c00c1/link_lists.bin
+vector_db/chroma.sqlite3
+
+-- 前后清单 diff（应为空）--
+(一致)
+
+-- 聚合 SHA-256（前 / 后）--
+53efc2bdfac5abba237056e20e72ab290eb0ad638a00b982b1b19d96271ed61d *-
+53efc2bdfac5abba237056e20e72ab290eb0ad638a00b982b1b19d96271ed61d *-

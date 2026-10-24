@@ -1,0 +1,40 @@
+2026-10-24 22:42:25,475 - INFO - 处理文档 2/2: doc_beta.txt
+2026-10-24 22:42:25,477 - INFO - 正在生成 4 个文本块的嵌入向量...
+2026-10-24 22:42:25,477 - INFO - 正在存储到向量数据库...
+2026-10-24 22:42:25,478 - INFO - ✅ 知识库构建完成，共处理 4 个文本块
+2026-10-24 22:42:25,479 - INFO - 正在扫描文档文件夹: C:\Users\郑曾波\AppData\Local\Temp\pytest-of-郑曾波\pytest-2522\test_embedding_failure_preserv0\docs
+2026-10-24 22:42:25,480 - INFO - 找到 2 个文档文件
+2026-10-24 22:42:25,480 - INFO - 清空现有知识库
+2026-10-24 22:42:25,481 - INFO - 处理文档 1/2: doc_alpha.md
+2026-10-24 22:42:25,481 - INFO - 处理文档 2/2: doc_beta.txt
+2026-10-24 22:42:25,482 - INFO - 正在生成 4 个文本块的嵌入向量...
+2026-10-24 22:42:25,483 - ERROR - ❌ 知识库构建失败: 注入的 embedding 失败
+2026-10-24 22:42:25,483 - ERROR - 文档检索失败: 注入的 embedding 失败
+------------------------------ Captured log call ------------------------------
+INFO     rag_system:rag_system.py:135 ✅ 创建新集合: company_knowledge
+INFO     rag_system:rag_system.py:261 正在扫描文档文件夹: C:\Users\郑曾波\AppData\Local\Temp\pytest-of-郑曾波\pytest-2522\test_embedding_failure_preserv0\docs
+INFO     rag_system:rag_system.py:270 找到 2 个文档文件
+INFO     rag_system:rag_system.py:290 清空现有知识库
+INFO     rag_system:rag_system.py:300 处理文档 1/2: doc_alpha.md
+INFO     rag_system:rag_system.py:300 处理文档 2/2: doc_beta.txt
+INFO     rag_system:rag_system.py:331 正在生成 4 个文本块的嵌入向量...
+INFO     rag_system:rag_system.py:335 正在存储到向量数据库...
+INFO     rag_system:rag_system.py:343 ✅ 知识库构建完成，共处理 4 个文本块
+INFO     rag_system:rag_system.py:261 正在扫描文档文件夹: C:\Users\郑曾波\AppData\Local\Temp\pytest-of-郑曾波\pytest-2522\test_embedding_failure_preserv0\docs
+INFO     rag_system:rag_system.py:270 找到 2 个文档文件
+INFO     rag_system:rag_system.py:290 清空现有知识库
+INFO     rag_system:rag_system.py:300 处理文档 1/2: doc_alpha.md
+INFO     rag_system:rag_system.py:300 处理文档 2/2: doc_beta.txt
+INFO     rag_system:rag_system.py:331 正在生成 4 个文本块的嵌入向量...
+ERROR    rag_system:rag_system.py:347 ❌ 知识库构建失败: 注入的 embedding 失败
+ERROR    rag_system:rag_system.py:376 文档检索失败: 注入的 embedding 失败
+============================== warnings summary ===============================
+..\..\..\..\Miniconda\Lib\site-packages\PyPDF2\__init__.py:21
+  C:\Miniconda\Lib\site-packages\PyPDF2\__init__.py:21: DeprecationWarning: PyPDF2 is deprecated. Please move to the pypdf library instead.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/test_rag_safe_rebuild.py::test_embedding_failure_preserves_old_library
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+1 failed, 11 deselected, 1 warning in 72.14s (0:01:12)

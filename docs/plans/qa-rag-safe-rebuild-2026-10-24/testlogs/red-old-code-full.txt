@@ -1,0 +1,12 @@
+ERROR    rag_system:rag_system.py:327 没有有效的文本块
+============================== warnings summary ===============================
+..\..\..\..\Miniconda\Lib\site-packages\PyPDF2\__init__.py:21
+  C:\Miniconda\Lib\site-packages\PyPDF2\__init__.py:21: DeprecationWarning: PyPDF2 is deprecated. Please move to the pypdf library instead.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/test_rag_safe_rebuild.py::test_embedding_failure_preserves_old_library
+FAILED tests/unit/test_rag_safe_rebuild.py::test_write_failure_preserves_old_library
+FAILED tests/unit/test_rag_safe_rebuild.py::test_parse_failure_preserves_old_library
+3 failed, 1 passed, 11 deselected, 1 warning in 54.87s
