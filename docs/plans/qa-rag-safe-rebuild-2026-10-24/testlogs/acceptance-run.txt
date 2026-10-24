@@ -7,3 +7,17 @@ $ python -B -m pytest -q tests/  (既有测试全套)
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 91 passed, 1 warning in 56.13s
+$ git rev-parse HEAD
+11011bd5878ef835475869ef4625363698a1a39c
+
+$ python -B -m pytest -q tests/unit/test_rag_safe_rebuild.py tests/integration/test_rag_rebuild_lifecycle.py  [最终代码树 c762e4d..11011bd（docs-only），2026-10-25]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+28 passed, 1 warning in 71.37s (0:01:11)
+
+$ python -B -m pytest -q tests/
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+97 passed, 1 warning in 46.50s
+
+[独立复审员在同代码上的运行：定向 28 passed in 95.74s；全套 97 passed in 59.84s —— 见 review/review-report.md]
