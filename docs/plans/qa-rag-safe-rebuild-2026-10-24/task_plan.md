@@ -1,3 +1,7 @@
+## ROOT 主线发布记录（2026-10-31）
+
+已验收作者提交5e5f22b2d7d652738e54bbfaced1982117616c7a现已快进合入本仓main；ROOT独立稀疏工区重新验证：28 focused+real-temporary-store pytest PASS/78.27s; only existingPyPDF2deprecation。原件/生产配置/作者树未动；MeetingConverter原.coverage保持。正常提交本发布记录后推远端，最终SHA与远端匹配由company-wiki总控PWF记录；本段不虚构CI已绿。
+
 # QA-RAG-SAFE-REBUILD：安全重建本地知识库
 
 PLAN_ID: qa-rag-safe-rebuild-2026-10-24
